@@ -1,0 +1,15 @@
+# Local .terraform directories
+.terraform/
+
+# State files
+terraform.tfstate
+terraform.tfstate.backup
+
+# Crash log files
+crash.log
+
+# Exclude variable files with secrets
+terraform.tfvars
+
+# Plan output
+*.tfplan 
