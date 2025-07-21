@@ -1,0 +1,75 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:14
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloakpass
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:21.0.1
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL_HOST: postgres
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloakpass
+      KC_DB_PORT: 5432
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME_STRICT: "false"
+      KC_LOG_LEVEL: DEBUG
+      KC_SPI_CLIENT_POLICY_DEFAULT: "false"  # Disable strict client policies
+      KC_FEATURES: "token-exchange,authorization"  # Ensure required features
+      KC_METRICS_ENABLED: "true"
+      # KC_FEATURES: token_exchange,authorization
+      
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    command: start-dev
+
+  web:
+    build:
+      context: ./webpage
+    container_name: static-site
+    ports:
+      - "8081:80"
+
+  oauth2-proxy:
+    image: quay.io/oauth2-proxy/oauth2-proxy:v7.6.0
+    container_name: oauth2-proxy
+    restart: on-failure
+    ports:
+      - "4180:4180"
+    environment:
+      OAUTH2_PROXY_PROVIDER: keycloak-oidc
+      OAUTH2_PROXY_CLIENT_ID: static-site
+      OAUTH2_PROXY_CLIENT_SECRET: dwUUfXLwBRUIMSjMMv1tB6K1LqoBok9R
+      OAUTH2_PROXY_COOKIE_SECRET: VXDsf5HHS4NvhKTZdLUfo_QY4YQlXkTeT5qog8AW9TQ
+      OAUTH2_PROXY_OIDC_ISSUER_URL: http://keycloak:8080/realms/master
+      OAUTH2_PROXY_REDIRECT_URL: http://localhost:4180/oauth2/callback
+      OAUTH2_PROXY_UPSTREAMS: http://static-site:80/
+      OAUTH2_PROXY_HTTP_ADDRESS: "0.0.0.0:4180"
+      OAUTH2_PROXY_WHITELIST_DOMAINS: "localhost,127.0.0.1"
+      OAUTH2_PROXY_OIDC_EMAIL_VERIFIED: "false"
+      OAUTH2_PROXY_EMAIL_DOMAINS: "*"
+      # for local testing only
+      OAUTH2_PROXY_COOKIE_SECURE: "false"
+      OAUTH2_PROXY_REVERSE_PROXY: "true"
+      OAUTH2_PROXY_SET_XAUTHREQUEST: "true"
+      OAUTH2_PROXY_PASS_AUTHORIZATION_HEADER: "true"
+
+    depends_on:
+      - keycloak
+      - web
+
+volumes:
+  pgdata:
