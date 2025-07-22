@@ -15,22 +15,22 @@
       kubernetes.core.k8s:
         kubeconfig: "{{ kubeconfig_path }}"
         state: present
-        definition: "{{ lookup('file', 'kubernetes/postgres-deployment.yaml') }}"
+        definition: "{{ lookup('file', '../kubernetes/postgres-deployment.yaml') }}"
 
     - name: Deploy Keycloak to AKS
       kubernetes.core.k8s:
         kubeconfig: "{{ kubeconfig_path }}"
         state: present
-        definition: "{{ lookup('file', 'kubernetes/keycloak-deployment.yaml') }}"
+        definition: "{{ lookup('file', '../kubernetes/keycloak-deployment.yaml') }}"
 
     - name: Deploy Web Server to AKS
       kubernetes.core.k8s:
         kubeconfig: "{{ kubeconfig_path }}"
         state: present
-        definition: "{{ lookup('file', 'kubernetes/web-deployment.yaml') }}"
+        definition: "{{ lookup('file', '../kubernetes/web-deployment.yaml') }}"
 
     - name: Deploy Ingress
       kubernetes.core.k8s:
         kubeconfig: "{{ kubeconfig_path }}"
         state: present
-        definition: "{{ lookup('file', 'kubernetes/ingress.yaml') }}"
+        definition: "{{ lookup('file', '../kubernetes/ingress.yaml') }}"
