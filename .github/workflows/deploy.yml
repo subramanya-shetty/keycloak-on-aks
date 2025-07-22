@@ -1,0 +1,50 @@
+name: Deploy Infrastructure and Apps
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+
+      - name: Terraform Init
+        working-directory: ./keycloak-on-aks/terraform
+        run: terraform init
+
+      - name: Terraform Apply
+        working-directory: ./keycloak-on-aks/terraform
+        run: terraform apply -auto-approve
+
+      - name: Save kubeconfig
+        working-directory: ./keycloak-on-aks/terraform
+        run: |
+          terraform output -raw kube_config > ../../ansible/kubeconfig
+
+      - name: Install Ansible and dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ansible kubernetes openshift
+
+      - name: Run Ansible Playbook
+        working-directory: ./keycloak-on-aks/ansible
+        run: ansible-playbook deploy.yml 
