@@ -1,0 +1,36 @@
+---
+- name: Deploy Keycloak, Postgres, and Web Server to AKS
+  hosts: localhost
+  vars:
+    kubeconfig_path: "./kubeconfig"
+  tasks:
+    - name: Ensure Kubernetes Python dependencies are installed
+      pip:
+        name:
+          - kubernetes
+          - openshift
+        state: present
+
+    - name: Deploy Postgres to AKS
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        state: present
+        definition: "{{ lookup('file', 'kubernetes/postgres-deployment.yaml') }}"
+
+    - name: Deploy Keycloak to AKS
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        state: present
+        definition: "{{ lookup('file', 'kubernetes/keycloak-deployment.yaml') }}"
+
+    - name: Deploy Web Server to AKS
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        state: present
+        definition: "{{ lookup('file', 'kubernetes/web-deployment.yaml') }}"
+
+    - name: Deploy Ingress
+      kubernetes.core.k8s:
+        kubeconfig: "{{ kubeconfig_path }}"
+        state: present
+        definition: "{{ lookup('file', 'kubernetes/ingress.yaml') }}"
