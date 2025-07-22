@@ -38,7 +38,7 @@ jobs:
       - name: Save kubeconfig
         working-directory: ./terraform
         run: |
-          terraform output -raw kube_config > ../../ansible/kubeconfig
+          terraform output -raw kube_config > ../ansible/kubeconfig
 
       - name: Install Ansible and dependencies
         run: |
