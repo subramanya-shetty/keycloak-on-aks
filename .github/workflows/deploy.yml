@@ -28,15 +28,15 @@ jobs:
         uses: hashicorp/setup-terraform@v2
 
       - name: Terraform Init
-        working-directory: ./keycloak-on-aks/terraform
+        working-directory: ./terraform
         run: terraform init
 
       - name: Terraform Apply
-        working-directory: ./keycloak-on-aks/terraform
+        working-directory: ./terraform
         run: terraform apply -auto-approve
 
       - name: Save kubeconfig
-        working-directory: ./keycloak-on-aks/terraform
+        working-directory: ./terraform
         run: |
           terraform output -raw kube_config > ../../ansible/kubeconfig
 
@@ -46,5 +46,5 @@ jobs:
           pip install ansible kubernetes openshift
 
       - name: Run Ansible Playbook
-        working-directory: ./keycloak-on-aks/ansible
+        working-directory: ./ansible
         run: ansible-playbook deploy.yml 
